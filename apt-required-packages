@@ -1,0 +1,11 @@
+haskell-platform
+git
+autoconf
+libtool
+make
+ncurses-dev
+g++
+llvm
+dblatex
+docbook-xsl
+docbook-utils

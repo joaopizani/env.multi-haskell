@@ -1,0 +1,124 @@
+#!/bin/bash
+
+usage() {
+cat <<EOF
+multi-haskell:
+    A helpful helper script to keep several Haskell environments (GHC+Cabal+Platform?)
+    organized, self-contained and relocatable. With this script, you can easily toggle
+    between several GHC+Cabal toolchain combinations, and realize a fresh install of a
+    new toolchain taking care of prefixes to make it relocatable and self-contained.
+
+    By relocatable I mean that all PREFIXes in the executables, as well as all paths in
+    configuration files of the GHC and Cabal installation use symbolic links to the
+    actual directories where the actual GHC and Cabal versions live. So, the ONLY thing
+    needed to switch between different Haskell installations is to point the symbolic
+    link to the new location.
+
+Usage:
+    multi-haskell list
+        Lists all environments available and the currently selected
+
+    multi-haskell select
+        Select a new environment to be used from now on
+
+    multi-haskell newghcsrc <envname> <ghc-tarball> [<cabal-install-tarball>]
+        Prepares a new environment subdirectory under <envname>, and then installs
+        a GHC (source) tarball under this subdirectory, taking care to setup all
+        prefixes nicely, so as to make the GHC installations COMPLETELY RELOCATABLE.
+        After the installation, the NEW ENVIRONMENT BECOMES IMMEDIATELY ACTIVE.
+
+        You can also pass as an optional parameter a cabal-install source
+        tarball, and then (if passed) it will be also setup properly.
+
+        The name you use as <envname> can be anything, but please use somthing
+        reasonable and with NO SPACES, for example <ghc-version>-<platform-version>-<extras>:
+            * ghc-7.4.2-platform20124-vanilla
+            * ghc-7.4.2-platform20124-repa
+            * ghc-7.6.2-noplatform-vanilla
+            * ghc-7.6.2-noplatform-repa
+EOF
+}
+
+
+
+# The trick to find out the full REAL path to the dir where THIS script lives
+REL_SRC="${BASH_SOURCE[0]}"
+DIR="$(cd -P "$(dirname "$(readlink -f "${REL_SRC}")" )" && pwd)"
+
+
+# Try to get the haskell envs root path from an environment variable, default if empty
+MULTIHASKELL_ENVS_DEFAULT="${DIR}/../envs"
+ENVS_ROOT_REL=${MULTIHASKELL_ENVS:-"${MULTIHASKELL_ENVS_DEFAULT}"}
+ENVS_ROOT="$(cd -P "${ENVS_ROOT_REL}" && pwd)"
+
+ENVS_CONTENTS="${ENVS_ROOT}/contents"
+ENVS_CURLINK="${ENVS_ROOT}/current"
+ENVS_CURPATH="$(readlink -f "${ENVS_CURLINK}")"
+ENVS_CURNAME="$(basename "${ENVS_CURPATH}")"
+
+
+# Shows all available toolchain combinations
+multi-haskell-list() {
+    echo "All environments:"
+
+    CNT=0
+    ENVS_ARRAY=( "${ENVS_CONTENTS}"/* )
+    for opt in "${ENVS_ARRAY[@]}"; do
+        echo "${CNT}) $(basename "${opt}")"
+        (( CNT++ ))
+    done
+
+    echo -e "\nCurrently selected:  ${ENVS_CURNAME}\n"
+}
+
+# Select a new current toolchain combination
+multi-haskell-select() {
+    multi-haskell-list
+    read -e -n 1 -p 'Desired target environment > ' ENVCODE
+    ln -s -f -n "${ENVS_ARRAY[${ENVCODE}]}"  "${ENVS_CURLINK}"
+    hash -r
+}
+
+
+
+# Parameter handling and performing the actual action
+case "$#" in
+"0" )
+    usage
+    exit 0
+    ;;
+"1" )
+    case "${1}" in
+    list )
+        multi-haskell-list
+        ;;
+    select )
+        multi-haskell-select
+        ;;
+    * )
+        usage
+        exit -1
+        ;;
+    esac
+    ;;
+"2" )
+    echo "multi-haskell: Unknown argument; ${1}"
+    usage
+    exit -1
+    ;;
+"3" )
+    case "${1}" in
+    newghcsrc )
+        source multi-haskell-install "${2}" "${3}"
+        ;;
+    * )
+        echo "multi-haskell: Unknown argument: ${1}"
+        usage
+        exit -1
+        ;;
+    esac
+    ;;
+* )
+    usage
+    exit -1
+esac

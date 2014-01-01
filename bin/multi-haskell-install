@@ -1,0 +1,85 @@
+#!/bin/bash
+
+ENVNAME="${1}"
+GHC="${2}"
+CI="${3}"
+
+CI_DEF_SITE="http://hackage.haskell.org/packages/archive/cabal-install"
+CI_DEF_VER="1.18.0.2"
+CI_DEF_PKG="cabal-install-${CI_DEF_VER}.tar.gz"
+
+
+# Preparing the new dir structure for the new installation
+ENVPATH="${ENVS_CONTENTS}/${ENVNAME}"
+GHCABSPREFIX="${ENVPATH}/ghc"
+DOTGHCPREFIX="${ENVPATH}/dotghc"
+CIPREFIX="${ENVPATH}/cabal"
+mkdir -p "${GHCABSPREFIX}" "${DOTGHCPREFIX}" "${CIPREFIX}"
+
+
+
+# Downloading and unpacking...
+
+UNPACK_DIR="${ENVS_ROOT}/unpack_${ENVNAME}"
+mkdir -p "${UNPACK_DIR}"
+
+# Unpack GHC only if not already unpacked
+if [ ! -d "${UNPACK_DIR}"/ghc* ]; then
+    GHCTYPE="$(file -ib "${GHC}")"
+    if   [[ "${GHCTYPE}" =~ application/x-bzip2 ]]; then tar -xjf "${GHC}" -C "${UNPACK_DIR}";
+    elif [[ "${GHCTYPE}" =~ application/x-gzip ]]; then tar -xzf "${GHC}" -C "${UNPACK_DIR}";
+    else echo "Unknown package type: $GHC. Go to $UNPACK_DIR and unpack it yourself" >&2; exit 1; fi
+fi
+
+# Download cabal-install if not passed by the user
+if [ ! "${CI}" ]; then
+    CI_NO_PREF=1
+    CI="${UNPACK_DIR}/${CI_DEF_PKG}"
+    if [ ! -f "${CI}" ]; then  # only if it's not already there
+        echo "downloading ${CI_DEF_PKG} ..."
+        wget "${CI_DEF_SITE}/${CI_DEF_VER}/${CI_DEF_PKG}" -O "${CI}"
+    fi
+fi
+
+CI_PKG="$(readlink -f "${CI}")"
+
+# Unpack Cabal only if not already unpacked
+if [ ! -d "${UNPACK_DIR}/$(basename "${CI}" .tar.gz)" ]; then
+    CITYPE="$(file -ib "${CI}")"
+    if   [[ "${CITYPE}" =~ application/x-bzip2 ]]; then
+        tar -xjf "${CI}" -C "${UNPACK_DIR}"
+    elif [[ "${CITYPE}" =~ application/x-gzip ]]; then
+        tar -xzf "${CI}" -C "${UNPACK_DIR}"
+    elif [[ "${CITYPE}" =~ application/zip ]]; then
+        unzip "${CI}" -d "${UNPACK_DIR}"
+    else
+        echo "Unknown package type: $CI. Go to $UNPACK_DIR and unpack it yourself." >&2; exit 1
+    fi
+fi
+
+
+# Installing the GHC distribution
+cd "${UNPACK_DIR}/ghc-7.6.3"
+rm -rf "${GHCABSPREFIX}" && mkdir -p "${GHCABSPREFIX}"  # removing previous failed attempts
+if [ ! -f "config.log" ]; then ./configure --prefix="${ENVS_CURLINK}/ghc"; fi
+make  # realizing the installation
+ln -s -f -n "${ENVS_CONTENTS}/${ENVNAME}" "${ENVS_CURLINK}" && hash -r
+make install
+
+
+
+# Installing cabal-install
+# remove possible previous failed attempts?
+cd "${UNPACK_DIR}"/cabal*
+chmod +x bootstrap.sh
+./bootstrap.sh
+cabal update
+if [ ! "${CI_NO_PREF}" ]; then cabal install cabal-install; fi
+
+
+
+# Tell the user how to cleanup
+echo "If no errors were shown until here, the installation of GHC and cabal-install for the"
+echo "environment ${ENVNAME} completed succesfully. You can safely cleanup all temporary files"
+echo "used in the installation by just issuing the command \"rm -rf ${UNPACK_DIR}\"."
+
