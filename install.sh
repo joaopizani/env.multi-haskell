@@ -24,12 +24,12 @@ cat <<EOF >> "${HOME}/.profile"
 
 ### MULTI-HASKELL section (http://github.com/joaopizani/multi-haskell) ###
 
-export MULTIHASKELL_ENVS=${MULTIHASKELL_ENVS_}
+export MULTIHASKELL_ENVS="${MULTIHASKELL_ENVS_}"
 
 PATH="${REPO_DIR}/bin:\${PATH}"
-PATH=\${MULTIHASKELL_ENVS}/current/ghc/bin:\${PATH}
-PATH=\${MULTIHASKELL_ENVS}/current/platform/bin:\${PATH}
-PATH=\${MULTIHASKELL_ENVS}/current/cabal/bin:\${PATH}
+PATH="\${MULTIHASKELL_ENVS}/current/ghc/bin:\${PATH}"
+PATH="\${MULTIHASKELL_ENVS}/current/platform/bin:\${PATH}"
+PATH="\${MULTIHASKELL_ENVS}/current/cabal/bin:\${PATH}"
 export PATH
 EOF
 
