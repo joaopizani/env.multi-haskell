@@ -15,7 +15,7 @@ REPO_DIR="$(cd -P "$(dirname "$(readlink -f "${REL_SRC}")" )" && pwd)"
 # Where all haskell environments (GHC + Cabal + (optional) Platform) live
 MULTIHASKELL_ENVS_DEFAULT_="${REPO_DIR}/envs"  # By default a subdir of the repo itself
 MULTIHASKELL_ENVS__=${1:-"$MULTIHASKELL_ENVS_DEFAULT_"}  # But can be given as argument
-MULTIHASKELL_ENVS_="$(cd -P "$(dirname "$(readlink -f "${MULTIHASKELL_ENVS__}")" )" && pwd)"  # absolute
+MULTIHASKELL_ENVS_="$(cd -P "$(readlink -f "${MULTIHASKELL_ENVS__}")" && pwd)"  # absolute
 
 mkdir -p "${MULTIHASKELL_ENVS_}"  # makes sure that the envs tree exists
 
