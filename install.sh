@@ -9,8 +9,7 @@
 #
 
 # The trick to find out the full REAL path to the dir where THIS script lives
-REL_SRC="${BASH_SOURCE[0]}"
-REPO_DIR="$(cd -P "$(dirname "$(readlink -f "${REL_SRC}")" )" && pwd)"
+REPO_DIR="$(cd -P "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")" )" && pwd)"
 
 # Where all haskell environments (GHC + Cabal + (optional) Platform) live
 MULTIHASKELL_ENVS_DEFAULT_="${REPO_DIR}/envs"  # By default a subdir of the repo itself
