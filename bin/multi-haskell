@@ -42,8 +42,7 @@ EOF
 
 
 # The trick to find out the full REAL path to the dir where THIS script lives
-REL_SRC="${BASH_SOURCE[0]}"
-DIR="$(cd -P "$(dirname "$(readlink -f "${REL_SRC}")" )" && pwd)"
+DIR="$(cd -P "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")" )" && pwd)"
 
 
 # Try to get the haskell envs root path from an environment variable, default if empty
