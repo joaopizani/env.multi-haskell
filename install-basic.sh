@@ -29,6 +29,7 @@ PATH="${REPO_DIR}/bin:\${PATH}"
 PATH="\${MULTIHASKELL_ENVS}/current/ghc/bin:\${PATH}"
 PATH="\${MULTIHASKELL_ENVS}/current/platform/bin:\${PATH}"
 PATH="\${MULTIHASKELL_ENVS}/current/cabal/bin:\${PATH}"
+PATH=".cabal-sandbox/bin:\${PATH}"
 export PATH
 EOF
 
