@@ -13,32 +13,8 @@ multi-haskell:
     actual directories where the actual GHC and Cabal versions live. So, the ONLY thing
     needed to switch between different Haskell installations is to point the symbolic
     link to the new location.
-
-Usage:
-    multi-haskell list
-        Lists all environments available and the currently selected
-
-    multi-haskell select
-        Select a new environment to be used from now on
-
-    multi-haskell newghcsrc <envname> <ghc-tarball> [<cabal-install-tarball>]
-        Prepares a new environment subdirectory under <envname>, and then installs
-        a GHC (source) tarball under this subdirectory, taking care to setup all
-        prefixes nicely, so as to make the GHC installations COMPLETELY RELOCATABLE.
-        After the installation, the NEW ENVIRONMENT BECOMES IMMEDIATELY ACTIVE.
-
-        You can also pass as an optional parameter a cabal-install source
-        tarball, and then (if passed) it will be also setup properly.
-
-        The name you use as <envname> can be anything, but please use somthing
-        reasonable and with NO SPACES, for example <ghc-version>-<platform-version>-<extras>:
-            * ghc-7.4.2-platform20124-vanilla
-            * ghc-7.4.2-platform20124-repa
-            * ghc-7.6.2-noplatform-vanilla
-            * ghc-7.6.2-noplatform-repa
 EOF
 }
-
 
 
 # The trick to find out the full REAL path to the dir where THIS script lives
@@ -83,39 +59,8 @@ multi-haskell-select() {
 # Parameter handling and performing the actual action
 case "$#" in
 "0" )
-    usage
+    multi-haskell-select
     exit 0
-    ;;
-"1" )
-    case "${1}" in
-    list )
-        multi-haskell-list
-        ;;
-    select )
-        multi-haskell-select
-        ;;
-    * )
-        usage
-        exit -1
-        ;;
-    esac
-    ;;
-"2" )
-    echo "multi-haskell: Unknown argument; ${1}"
-    usage
-    exit -1
-    ;;
-"3" )
-    case "${1}" in
-    newghcsrc )
-        source multi-haskell-install "${2}" "${3}"
-        ;;
-    * )
-        echo "multi-haskell: Unknown argument: ${1}"
-        usage
-        exit -1
-        ;;
-    esac
     ;;
 * )
     usage
