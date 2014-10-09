@@ -8,11 +8,10 @@
 # Haskell toolchain.
 #
 
-# The trick to find out the full REAL path to the dir where THIS script lives
-REPO_DIR="$(cd -P "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")" )" && pwd)"
+DIR="$(cd -P "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")" )" && pwd)"
 
 # Where all haskell environments (GHC + Cabal + (optional) Platform) live
-MULTIHASKELL_ENVS_DEFAULT_="${REPO_DIR}/envs"  # By default a subdir of the repo itself
+MULTIHASKELL_ENVS_DEFAULT_="${DIR}/envs"  # By default a subdir of the repo itself
 MULTIHASKELL_ENVS__=${1:-"$MULTIHASKELL_ENVS_DEFAULT_"}  # But can be given as argument
 MULTIHASKELL_ENVS_="$(cd -P "$(readlink -f "${MULTIHASKELL_ENVS__}")" && pwd)"  # absolute
 
@@ -25,7 +24,7 @@ cat <<EOF >> "${HOME}/.profile"
 
 export MULTIHASKELL_ENVS="${MULTIHASKELL_ENVS_}"
 
-PATH="${REPO_DIR}/bin:\${PATH}"
+PATH="${DIR}/bin:\${PATH}"
 PATH="\${MULTIHASKELL_ENVS}/current/ghc/bin:\${PATH}"
 PATH="\${MULTIHASKELL_ENVS}/current/platform/bin:\${PATH}"
 PATH="\${MULTIHASKELL_ENVS}/current/cabal/bin:\${PATH}"
